@@ -1,205 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Topic Hub</title>
-  <style>
-    /* 🌸 Base Styling */
-    body {
-      font-family: "Inter", sans-serif;
-      background: #f5f7fb;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-
-    header {
-      background: #3f51b5;
-      color: white;
-      padding: 1.5rem;
-      text-align: center;
-      font-size: 1.6rem;
-      letter-spacing: 1px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    main {
-      width: 90%;
-      max-width: 900px;
-      margin: 2rem auto;
-    }
-
-    /* 🌼 Form Styling */
-    .form-container {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem 2rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-      margin-bottom: 2rem;
-    }
-
-    .form-container h2 {
-      margin-top: 0;
-      color: #3f51b5;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    input, textarea {
-      padding: 0.8rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: all 0.2s ease;
-    }
-
-    input:focus, textarea:focus {
-      border-color: #3f51b5;
-      outline: none;
-      box-shadow: 0 0 4px rgba(63, 81, 181, 0.3);
-    }
-
-    button {
-      background: #3f51b5;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.9rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    button:hover {
-      background: #2e3a8c;
-    }
-
-    /* 🧊 Topics List */
-    .topics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.2rem;
-    }
-
-    .topic-card {
-      background: white;
-      border-radius: 14px;
-      padding: 1.2rem 1.5rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .topic-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .topic-card h3 {
-      color: #3f51b5;
-      margin-top: 0;
-    }
-
-    .topic-card a {
-      display: inline-block;
-      margin-right: 1rem;
-      color: #3f51b5;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .topic-card a:hover {
-      text-decoration: underline;
-    }
-
-    .no-data {
-      text-align: center;
-      color: #777;
-      margin-top: 2rem;
-    }
-  </style>
-</head>
-<body>
-  <header>📘 Topic Hub
-
-   <a href="add.html"><button id="addTopicBtn" style="float: right;"> + Add Topic</button></a> 
-  </header>
-
-  <main>
-    <div class="form-container">
-      <!-- <h2>Add a New Topic</h2> -->
-      <form id="topicForm">
-        <h2>All Topics</h2>
-        <!-- <input type="text" id="title" placeholder="Enter topic title" required /> -->
-        <!-- <textarea id="description" placeholder="Enter description" rows="3"></textarea> -->
-        <!-- <input type="url" id="docUrl" placeholder="Documentation URL" /> -->
-        <!-- <input type="url" id="videoUrl" placeholder="YouTube Video URL" /> -->
-        <!-- <!-- <button type="submit">Add Topic</button> -->
-      </form>
-    </div>
-
-    <section>
-      
-      <div class="topics" id="topicsList">
-        <p class="no-data">Loading topics...</p>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    const BASE_URL = "http://127.0.0.1:8000/api/topics/";
-    const form = document.getElementById("topicForm");
-    const topicsList = document.getElementById("topicsList");
-
-    // Load all topics
-    async function loadTopics() {
-      topicsList.innerHTML = '<p class="no-data">Loading...</p>';
-      const res = await fetch(BASE_URL);
-      const data = await res.json();
-      if (data.length === 0) {
-        topicsList.innerHTML = '<p class="no-data">No topics yet.</p>';
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Topic Hub</title>
+    <style>
+      /* 🔔 Toast Notification */
+      /* 🔔 Toast Notification (Top Banner Style) */
+      .toast {
+        position: fixed;
+        top: -80px; /* start hidden above the screen */
+        left: 50%;
+        transform: translateX(-50%);
+        background: #323232;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transition: all 0.4s ease;
+        z-index: 9999;
+        font-size: 1rem;
+        text-align: center;
+        min-width: 280px;
       }
-      topicsList.innerHTML = data.map(topic => `
-        <div class="topic-card">
-          <h3>${topic.title}</h3>
-          <p>${topic.description || ''}</p>
-          ${topic.documentation_url ? `<a href="${topic.documentation_url}" target="_blank">Docs</a>` : ''}
-          ${topic.video_url ? `<a href="${topic.video_url}" target="_blank">Video</a>` : ''}
-          <p style="color:gray; font-size:0.9rem;">By: ${topic.user || 'Anonymous'}</p>
+
+      .toast.show {
+        top: 20px; /* slide down into view */
+        opacity: 1;
+      }
+
+      /* 🌸 Base Styling */
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f5f7fb;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      header {
+        background: #3f51b5;
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        font-size: 1.6rem;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      main {
+        width: 90%;
+        max-width: 900px;
+        margin: 2rem auto;
+      }
+
+      /* 🌼 Form Styling */
+      .form-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+      }
+
+      .form-container h2 {
+        margin-top: 0;
+        color: #3f51b5;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      input,
+      textarea {
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: #3f51b5;
+        outline: none;
+        box-shadow: 0 0 4px rgba(63, 81, 181, 0.3);
+      }
+
+      button {
+        background: #3f51b5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.9rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      button:hover {
+        background: #2e3a8c;
+      }
+
+      /* 🧊 Topics List */
+      .topics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.2rem;
+      }
+
+      .topic-card {
+        background: white;
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .topic-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .topic-card h3 {
+        color: #3f51b5;
+        margin-top: 0;
+      }
+
+      .topic-card a {
+        display: inline-block;
+        margin-right: 1rem;
+        color: #3f51b5;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .topic-card a:hover {
+        text-decoration: underline;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #777;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      📘 Topic Hub
+
+      <a href="add.html"
+        ><button id="addTopicBtn" style="float: right">+ Add Topic</button></a
+      >
+    </header>
+
+    <main>
+      <div class="form-container">
+        <!-- <h2>Add a New Topic</h2> -->
+        <form id="topicForm">
+          <h2>All Topics</h2>
+          <!-- <input type="text" id="title" placeholder="Enter topic title" required /> -->
+          <!-- <textarea id="description" placeholder="Enter description" rows="3"></textarea> -->
+          <!-- <input type="url" id="docUrl" placeholder="Documentation URL" /> -->
+          <!-- <input type="url" id="videoUrl" placeholder="YouTube Video URL" /> -->
+          <!-- <!-- <button type="submit">Add Topic</button> -->
+        </form>
+      </div>
+
+      <section>
+        <div class="topics" id="topicsList">
+          <p class="no-data">Loading topics...</p>
         </div>
-      `).join('');
-    }
+      </section>
+    </main>
 
-    // Add a new topic
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    <script>
+      const BASE_URL = "http://127.0.0.1:8000/api/topics/";
+      const form = document.getElementById("topicForm");
+      const topicsList = document.getElementById("topicsList");
 
-      const topicData = {
-        title: title.value,
-        description: description.value,
-        documentation_url: docUrl.value,
-        video_url: videoUrl.value
+      // Load all topics and render with delete buttons
+      async function loadTopics() {
+        topicsList.innerHTML = '<p class="no-data">Loading...</p>';
+        try {
+          const res = await fetch(BASE_URL);
+          const data = await res.json();
+
+          if (!Array.isArray(data) || data.length === 0) {
+            topicsList.innerHTML = '<p class="no-data">No topics yet.</p>';
+            return;
+          }
+
+          topicsList.innerHTML = data
+            .map((topic) => {
+              return `
+            <div class="topic-card" data-id="${topic.id}">
+              <h3>${escapeHtml(topic.title)}</h3>
+              <p>${escapeHtml(topic.description || "")}</p>
+              ${
+                topic.documentation_url
+                  ? `<a href="${topic.documentation_url}" target="_blank">Docs</a>`
+                  : ""
+              }
+              ${
+                topic.video_url
+                  ? `<a href="${topic.video_url}" target="_blank">Video</a>`
+                  : ""
+              }
+              <p style="color:gray; font-size:0.9rem;">By: ${escapeHtml(
+                topic.user || "Anonymous"
+              )}</p>
+              <button class="delete-btn" data-id="${topic.id}">🗑 Delete</button>
+            </div>`;
+            })
+            .join("");
+
+          // Attach delete handlers
+          document.querySelectorAll(".delete-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const id = btn.getAttribute("data-id");
+              deleteTopic(id);
+            });
+          });
+        } catch (err) {
+          topicsList.innerHTML =
+            '<p class="no-data">Failed to load topics.</p>';
+          console.error("Failed to load topics", err);
+        }
+      }
+
+      // Simple HTML escaper to avoid injection from API
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // Delete a topic by id
+      async function deleteTopic(id) {
+        try {
+          const res = await fetch(BASE_URL + id + "/", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("access_token"),
+            },
+          });
+
+          if (res.ok || res.status === 204) {
+            // Remove from UI immediately
+            const el = document.querySelector(`.topic-card[data-id="${id}"]`);
+            if (el) el.remove();
+          } else if (res.status === 403) {
+            showNotification("⛔ You are not allowed to delete this topic.");
+          } else {
+            const text = await res.text();
+            console.error("Delete failed", res.status, text);
+            showNotification("⚠️ Failed to delete topic Or You are not allowed to delete this topic.");
+          }
+        } catch (err) {
+          console.error("Delete error", err);
+          showNotification("⚠️ Network error while deleting.");
+        }
+      }
+
+      // WebSocket connection (single, reused)
+      const socket = new WebSocket("ws://127.0.0.1:8000/ws/topics/");
+
+      socket.onopen = () => console.log("✅ WebSocket connected");
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          // If server sends deleted_id, remove that element
+          if (data.deleted_id) {
+            const el = document.querySelector(
+              `.topic-card[data-id="${data.deleted_id}"]`
+            );
+            if (el) el.remove();
+            showNotification(`🗑 Topic deleted (id: ${data.deleted_id})`);
+            return;
+          }
+
+          // If server sends details about a new topic
+          if (data.title) {
+            showNotification(
+              `🆕 New topic added: <b>${escapeHtml(
+                data.title
+              )}</b> by <b>${escapeHtml(data.user)}</b>`
+            );
+            loadTopics(); // refresh list
+          }
+        } catch (err) {
+          console.error("Invalid WS message", err, event.data);
+        }
       };
 
-      await fetch(BASE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + localStorage.getItem("access_token") // Optional if logged in
-        },
-        body: JSON.stringify(topicData)
+      socket.onclose = () => console.log("❌ WebSocket disconnected");
+
+      // 🔔 Notification popup
+      function showNotification(message) {
+        const note = document.createElement("div");
+        note.className = "toast";
+        note.innerHTML = message;
+        document.body.appendChild(note);
+
+        // show animation
+        setTimeout(() => note.classList.add("show"), 100);
+
+        // hide after few seconds
+        setTimeout(() => {
+          note.classList.remove("show");
+          setTimeout(() => note.remove(), 500);
+        }, 4000);
+      }
+
+      // Add a new topic (form kept as view-only here)
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        // The add form is on a separate page. Just reload list if needed.
+        loadTopics();
       });
 
-      form.reset();
+      // Initial load
       loadTopics();
-    });
-
-    loadTopics();
-  </script>
-</body>
+    </script>
+  </body>
 </html>
