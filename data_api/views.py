@@ -2,7 +2,7 @@ from rest_framework import generics , permissions
 from .models import Topic
 from .serializers import TopicSerializer
 from rest_framework.exceptions import PermissionDenied
-from .tasks import notify_new_topic
+
 from rest_framework.response import Response
 
 from channels.layers import get_channel_layer
@@ -29,7 +29,7 @@ class TopicListCreateView(generics.ListCreateAPIView):
         topic = serializer.save(user=self.request.user)
         
 
-        notify_new_topic.delay(topic.id, topic.title)
+        
         
         # Broadcast to WebSocket
         channel_layer = get_channel_layer()

@@ -15,6 +15,7 @@ from datetime import timedelta
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+from celery.schedules import crontab
 
 
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'data_api',
     'accounts',
     'channels',
+      'django_celery_beat',
 
     #  Rest framework
     'rest_framework',
@@ -136,8 +138,15 @@ TEMPLATES = [
     },
 ]
 
+CELERY_BEAT_SCHEDULE = {
+    'remind-every-1-min': {
+        'task': 'data_api.tasks.remind_users_to_add_topic',
+        'schedule': crontab(minute='*/1'),  # every 1 minute
+    },
+}
 
-# 
+
+ 
 # WSGI_APPLICATION = 'all_topics.wsgi.application'
 ASGI_APPLICATION = "all_topics.asgi.application"
 

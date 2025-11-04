@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register | Topic Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
       * {
         margin: 0;
@@ -17,31 +18,84 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated background elements */
+      body::before {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 50%;
+        top: -200px;
+        right: -200px;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      body::after {
+        content: '';
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 50%;
+        bottom: -175px;
+        left: -175px;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite reverse;
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(10deg);
+        }
       }
 
       .container {
         display: flex;
         width: 900px;
-        height: 550px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        min-height: 550px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         overflow: hidden;
+        z-index: 1;
+        animation: slideIn 0.6s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
 
       .form-container {
         flex: 1;
-        padding: 40px;
+        padding: 50px 40px;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        background: white;
       }
 
       .preview-container {
         flex: 1;
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 40px;
         display: flex;
@@ -49,91 +103,361 @@
         justify-content: center;
         align-items: center;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Animated pattern in preview */
+      .preview-container::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        animation: backgroundMove 20s linear infinite;
+      }
+
+      @keyframes backgroundMove {
+        from {
+          transform: translateX(0) translateY(0);
+        }
+        to {
+          transform: translateX(100px) translateY(100px);
+        }
       }
 
       h2 {
-        color: #333;
-        font-size: 28px;
+        color: #2d3748;
+        font-size: 32px;
         font-weight: 700;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .form-subtitle {
+        color: #718096;
+        font-size: 14px;
+        margin-bottom: 30px;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
       }
 
       .form-group {
         position: relative;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.6s ease-out;
+        animation-fill-mode: both;
+      }
+
+      .form-group:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+
+      .form-group:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+
+      .form-group:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        transition: color 0.3s ease;
+        font-size: 16px;
       }
 
       input {
         width: 100%;
-        padding: 12px 15px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        font-size: 16px;
+        padding: 14px 15px 14px 45px;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: #f7fafc;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+      }
+
+      input:focus + .input-icon {
+        color: #667eea;
+      }
+
+      input::placeholder {
+        color: #a0aec0;
       }
 
       .btn {
         width: 100%;
-        padding: 12px;
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
-        margin-top: 8px;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.5s both;
+      }
+
+      .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.5s ease;
+      }
+
+      .btn:hover::before {
+        left: 100%;
       }
 
       .btn:hover {
         transform: translateY(-3px);
-        box-shadow: 0 7px 15px rgba(106, 17, 203, 0.3);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(-1px);
       }
 
       .register-link {
         text-align: center;
-        margin-top: 14px;
+        margin-top: 20px;
         font-size: 14px;
-        color: #555;
+        color: #4a5568;
+        animation: fadeInUp 0.6s ease-out 0.6s both;
       }
 
       .register-link a {
-        color: #6a11cb;
+        color: #667eea;
         text-decoration: none;
         font-weight: 600;
+        transition: color 0.3s ease;
+        position: relative;
+      }
+
+      .register-link a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #667eea;
+        transition: width 0.3s ease;
+      }
+
+      .register-link a:hover::after {
+        width: 100%;
+      }
+
+      .register-link a:hover {
+        color: #764ba2;
       }
 
       .error {
-        color: #d32f2f;
-        margin-top: 8px;
-        min-height: 18px;
+        color: #e53e3e;
+        margin-top: 12px;
+        min-height: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        animation: shake 0.5s ease-in-out;
+      }
+
+      .error:not(:empty)::before {
+        content: '⚠️';
+        font-size: 14px;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
       }
 
       .preview-title {
-        font-size: 32px;
+        font-size: 36px;
         margin-bottom: 20px;
         font-weight: 700;
+        z-index: 1;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
       }
 
       .preview-text {
         font-size: 16px;
-        line-height: 1.6;
+        line-height: 1.8;
         margin-bottom: 30px;
         max-width: 350px;
+        opacity: 0.95;
+        z-index: 1;
+        animation: fadeInUp 0.6s ease-out 0.3s both;
+      }
+
+      .animation-demo {
+        width: 100%;
+        max-width: 300px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        animation: fadeInUp 0.6s ease-out 0.4s both;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .animation-demo::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shine 3s ease-in-out infinite;
+      }
+
+      @keyframes shine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+
+      .pulse-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+        position: relative;
+        animation: pulse 2s infinite;
+      }
+
+      .pulse-circle::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+        animation: ripple 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+      }
+
+      @keyframes ripple {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+      }
+
+      /* Features list */
+      .features-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 30px;
+        z-index: 1;
+      }
+
+      .features-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        animation: fadeInUp 0.6s ease-out both;
+        opacity: 0.9;
+      }
+
+      .features-list li:nth-child(1) { animation-delay: 0.5s; }
+      .features-list li:nth-child(2) { animation-delay: 0.6s; }
+      .features-list li:nth-child(3) { animation-delay: 0.7s; }
+
+      .features-list i {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
       }
 
       @media (max-width: 768px) {
+        body::before,
+        body::after {
+          display: none;
+        }
+
         .container {
           flex-direction: column;
           height: auto;
           width: 100%;
+          max-width: 400px;
         }
 
         .preview-container {
           order: -1;
-          padding: 30px 20px;
+          padding: 40px 20px;
+          min-height: 250px;
         }
 
         .form-container {
-          padding: 30px 20px;
+          padding: 40px 25px;
+        }
+
+        h2 {
+          font-size: 26px;
+        }
+
+        .preview-title {
+          font-size: 28px;
+        }
+
+        .animation-demo {
+          height: 100px;
         }
       }
     </style>
@@ -141,25 +465,32 @@
   <body>
     <div class="container">
       <div class="form-container">
-        <h2>🧑‍💻 Create Account</h2>
+        <h2>🚀 Create Account</h2>
+        <p class="form-subtitle">Join the community and start exploring</p>
         <form id="registerForm">
           <div class="form-group">
-            <input type="text" id="username" placeholder="Username" required />
+            <div style="position: relative;">
+              <input type="text" id="username" placeholder="Username" required />
+              <i class="fas fa-user input-icon"></i>
+            </div>
           </div>
           <div class="form-group">
-            <input type="email" id="email" placeholder="Email (optional)" />
+            <div style="position: relative;">
+              <input type="email" id="email" placeholder="Email (optional)" />
+              <i class="fas fa-envelope input-icon"></i>
+            </div>
           </div>
           <div class="form-group">
-            <input
-              type="password"
-              id="password"
-              placeholder="Password"
-              required
-            />
+            <div style="position: relative;">
+              <input type="password" id="password" placeholder="Password" required />
+              <i class="fas fa-lock input-icon"></i>
+            </div>
           </div>
-          <button type="submit" class="btn">Register</button>
+          <button type="submit" class="btn">
+            <span>Create Account</span>
+          </button>
           <div class="register-link">
-            Already have an account? <a href="login.html">Login</a>
+            Already have an account? <a href="login.html">Sign in</a>
           </div>
           <p id="errorMsg" class="error" aria-live="polite"></p>
         </form>
@@ -170,29 +501,23 @@
           Create an account to add and follow topics, collaborate in real time,
           and get notified about updates.
         </p>
-        <div
-          class="animation-demo"
-          style="
-            width: 100%;
-            max-width: 300px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          "
-        >
-          <div
-            style="
-              width: 50px;
-              height: 50px;
-              border-radius: 50%;
-              background: rgba(255, 255, 255, 0.3);
-              animation: pulse 2s infinite;
-            "
-          ></div>
+        <div class="animation-demo">
+          <div class="pulse-circle"></div>
         </div>
+        <ul class="features-list">
+          <li>
+            <i class="fas fa-check-circle"></i>
+            <span>Real-time collaboration</span>
+          </li>
+          <li>
+            <i class="fas fa-check-circle"></i>
+            <span>Follow your favorite topics</span>
+          </li>
+          <li>
+            <i class="fas fa-check-circle"></i>
+            <span>Instant notifications</span>
+          </li>
+        </ul>
       </div>
     </div>
 

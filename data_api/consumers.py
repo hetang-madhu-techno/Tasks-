@@ -27,3 +27,10 @@ class TopicConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             "deleted_id": event["id"]
         }))
+
+
+    async def send_notification(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "reminder",
+            "message": event["message"]
+        }))

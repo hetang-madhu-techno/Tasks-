@@ -9,8 +9,6 @@ app = Celery('all_topics')
 
 # Read config from Django settings, using CELERY_ prefix
 app.config_from_object('django.conf:settings', namespace='CELERY')
-
-# Auto-discover tasks from all installed apps
 app.autodiscover_tasks()
 
 @app.task(bind=True)
