@@ -84,6 +84,20 @@
         transition: all 0.2s ease;
       }
 
+      .delete-btn {
+        background: #d32f2f;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background 0.2s ease;
+      }
+      .delete-btn:hover {
+        background: #b71c1c;
+      }
+
       input:focus,
       textarea:focus {
         border-color: #3f51b5;
@@ -157,6 +171,9 @@
       <a href="add.html"
         ><button id="addTopicBtn" style="float: right">+ Add Topic</button></a
       >
+      <a href="login.html"
+        ><button id="loginBtn" style="float: right">Login</button></a
+      >
     </header>
 
     <main>
@@ -181,6 +198,7 @@
 
     <script>
       const BASE_URL = "http://127.0.0.1:8000/api/topics/";
+      const socket = new WebSocket("ws://127.0.0.1:8000/ws/topics/");
       const form = document.getElementById("topicForm");
       const topicsList = document.getElementById("topicsList");
 
@@ -247,7 +265,7 @@
       // Delete a topic by id
       async function deleteTopic(id) {
         try {
-          const res = await fetch(BASE_URL + id + "/", {
+          const res = await fetch(`${BASE_URL}${id}/`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -256,24 +274,25 @@
           });
 
           if (res.ok || res.status === 204) {
-            // Remove from UI immediately
+            // 🔥 Remove topic from DOM
             const el = document.querySelector(`.topic-card[data-id="${id}"]`);
             if (el) el.remove();
+
+            showNotification("🗑️ Topic deleted successfully!");
           } else if (res.status === 403) {
             showNotification("⛔ You are not allowed to delete this topic.");
           } else {
             const text = await res.text();
             console.error("Delete failed", res.status, text);
-            showNotification("⚠️ Failed to delete topic Or You are not allowed to delete this topic.");
+            showNotification("⚠️ Failed to delete topic.");
           }
         } catch (err) {
           console.error("Delete error", err);
-          showNotification("⚠️ Network error while deleting.");
+          showNotification("⚠️ Network error while deleting topic.");
         }
       }
 
       // WebSocket connection (single, reused)
-      const socket = new WebSocket("ws://127.0.0.1:8000/ws/topics/");
 
       socket.onopen = () => console.log("✅ WebSocket connected");
 
@@ -305,7 +324,23 @@
         }
       };
 
-      socket.onclose = () => console.log("❌ WebSocket disconnected");
+      socket.onclose = (event) => {
+        console.log("❌ WebSocket disconnected", event);
+        try {
+          console.log(
+            "WebSocket close code:",
+            event.code,
+            "reason:",
+            event.reason
+          );
+        } catch (err) {
+          console.log("Could not read close event details", err);
+        }
+      };
+
+      socket.onerror = (err) => {
+        console.error("WebSocket error", err);
+      };
 
       // 🔔 Notification popup
       function showNotification(message) {

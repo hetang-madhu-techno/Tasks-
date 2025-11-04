@@ -11,8 +11,13 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 # Profile (for viewing user details)
-class ProfileView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    # permission_classes = [permissions.IsAdminUser]
+class ProfileView(generics.RetrieveAPIView):
+    """Return the currently authenticated user's profile.
 
-    queryset = User.objects.all()
+    If you want an admin-only list of users, add a separate view.
+    """
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

@@ -21,7 +21,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    
+    # Do not expose password in API responses
     class Meta:
         model = User
-        fields = ['id', 'username', 'email' , 'password']
+        fields = ['id', 'username', 'email']
+        read_only_fields = ['id', 'username', 'email']

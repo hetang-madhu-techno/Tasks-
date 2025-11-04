@@ -2,11 +2,19 @@ from rest_framework import generics , permissions
 from .models import Topic
 from .serializers import TopicSerializer
 from rest_framework.exceptions import PermissionDenied
+from .tasks import notify_new_topic
+from rest_framework.response import Response
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.http import JsonResponse
+import threading
+from .tasks import background_task_example
 
 
+def trigger_task(request):
+    threading.Thread(target=background_task_example).start()
+    return JsonResponse({"status": "Background task started"})
 
 class TopicListCreateView(generics.ListCreateAPIView):
     queryset = Topic.objects.all()
@@ -19,6 +27,10 @@ class TopicListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         topic = serializer.save(user=self.request.user)
+        
+
+        notify_new_topic.delay(topic.id, topic.title)
+        
         # Broadcast to WebSocket
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
@@ -29,6 +41,7 @@ class TopicListCreateView(generics.ListCreateAPIView):
                 "user": topic.user.username,
             }
         )
+        return Response({"message": "Topic created successfully"})
         
 class RetrieveUpdateDestroyTopicView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Topic.objects.all()
@@ -36,10 +49,30 @@ class RetrieveUpdateDestroyTopicView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         
-        if not self.request.user.is_staff:
-            raise PermissionDenied("Only admin users can delete topics.")
-        instance.delete()
-    
+        user = self.request.user
+
+        
+        if user.is_superuser or user.is_staff:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "topics_group",
+                {"type": "send_deleted_topic", "id": instance.pk},
+            )
+            instance.delete()
+            return
+
+        if instance.user == user:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "topics_group",
+                {"type": "send_deleted_topic", "id": instance.pk},
+            )
+            instance.delete()
+            return
+
+
+        # Otherwise deny
+        raise PermissionDenied("You do not have permission to delete this topic.")
 
 
     

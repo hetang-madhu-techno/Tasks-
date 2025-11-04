@@ -5,66 +5,195 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register | Topic Hub</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
       body {
-        font-family: "Inter", sans-serif;
-        background: #f3f5fa;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        padding: 20px;
       }
-      .register-box {
+
+      .container {
+        display: flex;
+        width: 900px;
+        height: 550px;
         background: white;
-        padding: 2rem 2.5rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        width: 90%;
-        max-width: 400px;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+      }
+
+      .form-container {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .preview-container {
+        flex: 1;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         text-align: center;
       }
+
       h2 {
-        color: #3f51b5;
-        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 20px;
       }
+
+      .form-group {
+        position: relative;
+        margin-bottom: 18px;
+      }
+
       input {
         width: 100%;
-        padding: 0.8rem;
+        padding: 12px 15px;
         border-radius: 8px;
         border: 1px solid #ddd;
-        margin-bottom: 1rem;
-        font-size: 1rem;
+        font-size: 16px;
       }
-      button {
+
+      .btn {
         width: 100%;
-        background: #3f51b5;
+        padding: 12px;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
         color: white;
-        padding: 0.9rem;
         border: none;
         border-radius: 8px;
+        font-size: 16px;
         cursor: pointer;
+        margin-top: 8px;
       }
-      button:hover {
-        background: #2e3a8c;
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(106, 17, 203, 0.3);
       }
+
+      .register-link {
+        text-align: center;
+        margin-top: 14px;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .register-link a {
+        color: #6a11cb;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
       .error {
-        color: red;
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
+        color: #d32f2f;
+        margin-top: 8px;
+        min-height: 18px;
+      }
+
+      .preview-title {
+        font-size: 32px;
+        margin-bottom: 20px;
+        font-weight: 700;
+      }
+
+      .preview-text {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        max-width: 350px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+          height: auto;
+          width: 100%;
+        }
+
+        .preview-container {
+          order: -1;
+          padding: 30px 20px;
+        }
+
+        .form-container {
+          padding: 30px 20px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="register-box">
-      <h2>🧑‍💻 Create Account</h2>
-      <form id="registerForm">
-        <input type="text" id="username" placeholder="Username" required />
-        <input type="email" id="email" placeholder="Email (optional)" />
-        <input type="password" id="password" placeholder="Password" required />
-        <button type="submit">Register</button>
-        <p>Already have an account? <a href="login.html">Login</a></p>
-        <p class="error" id="errorMsg"></p>
-      </form>
+    <div class="container">
+      <div class="form-container">
+        <h2>🧑‍💻 Create Account</h2>
+        <form id="registerForm">
+          <div class="form-group">
+            <input type="text" id="username" placeholder="Username" required />
+          </div>
+          <div class="form-group">
+            <input type="email" id="email" placeholder="Email (optional)" />
+          </div>
+          <div class="form-group">
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn">Register</button>
+          <div class="register-link">
+            Already have an account? <a href="login.html">Login</a>
+          </div>
+          <p id="errorMsg" class="error" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="preview-container">
+        <h2 class="preview-title">Join TopicsHub</h2>
+        <p class="preview-text">
+          Create an account to add and follow topics, collaborate in real time,
+          and get notified about updates.
+        </p>
+        <div
+          class="animation-demo"
+          style="
+            width: 100%;
+            max-width: 300px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <div
+            style="
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              background: rgba(255, 255, 255, 0.3);
+              animation: pulse 2s infinite;
+            "
+          ></div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -75,28 +204,51 @@
         .addEventListener("submit", async (e) => {
           e.preventDefault();
 
-          const username = document.getElementById("username").value;
-          const email = document.getElementById("email").value;
+          const username = document.getElementById("username").value.trim();
+          const email = document.getElementById("email").value.trim();
           const password = document.getElementById("password").value;
           const errorMsg = document.getElementById("errorMsg");
 
-          const res = await fetch(BASE_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, email, password }),
-          });
+          if (!username || !password) {
+            if (errorMsg)
+              errorMsg.textContent = "Username and password are required.";
+            return;
+          }
 
-          const data = await res.json();
+          try {
+            const res = await fetch(BASE_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, email, password }),
+            });
 
-          if (res.ok) {
-            alert("✅ Registration successful! Please log in now.");
-            window.location.href = "login.html";
-          } else {
-            errorMsg.textContent =
-              data.username ||
-              data.email ||
-              data.password ||
-              "Registration failed.";
+            let data = null;
+            try {
+              data = await res.json();
+            } catch (_) {}
+
+            if (res.ok) {
+              console.log("Registration succeeded");
+              alert("✅ Registration successful! Please log in now.");
+              window.location.href = "login.html";
+            } else {
+              const message =
+                (data &&
+                  (data.username ||
+                    data.email ||
+                    data.password ||
+                    data.detail)) ||
+                `Registration failed (status ${res.status}).`;
+              if (errorMsg) errorMsg.textContent = message;
+              console.error(
+                "Registration failed",
+                res.status,
+                data || (await res.text())
+              );
+            }
+          } catch (err) {
+            console.error("Network/register error", err);
+            if (errorMsg) errorMsg.textContent = "Server not reachable.";
           }
         });
     </script>

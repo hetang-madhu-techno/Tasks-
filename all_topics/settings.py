@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 
 
@@ -78,8 +81,13 @@ AUTHENTICATION_BACKENDS = (
 
 SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-ACCOUNT_EMAIL_REQUIRED = True
+
+# ✅ New login method format
+ACCOUNT_LOGIN_METHODS = {"email", "username"}
+
+# ✅ Updated signup field format
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -90,6 +98,14 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -120,15 +136,19 @@ TEMPLATES = [
     },
 ]
 
+
+# 
+# WSGI_APPLICATION = 'all_topics.wsgi.application'
+ASGI_APPLICATION = "all_topics.asgi.application"
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
-
-WSGI_APPLICATION = 'all_topics.wsgi.application'
-
-ASGI_APPLICATION = 'backend.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
