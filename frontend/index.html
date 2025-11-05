@@ -542,6 +542,16 @@
         <!-- <h2>Add a New Topic</h2> -->
         <form id="topicForm">
           <h2>All Topics</h2>
+          <button id="downloadBtn">⬇️ Download Notes</button>
+          <div id="downloadStatus" style="display: none; margin-top: 10px">
+            <progress
+              id="progressBar"
+              value="0"
+              max="100"
+              style="width: 200px"
+            ></progress>
+            <span id="progressText">Starting download...</span>
+          </div>
           <!-- <input type="text" id="title" placeholder="Enter topic title" required /> -->
           <!-- <textarea id="description" placeholder="Enter description" rows="3"></textarea> -->
           <!-- <input type="url" id="docUrl" placeholder="Documentation URL" /> -->
@@ -558,183 +568,203 @@
     </main>
 
     <script>
-      const BASE_URL = "http://127.0.0.1:8000/api/topics/";
-      const socket = new WebSocket("ws://127.0.0.1:8000/ws/topics/");
-      const form = document.getElementById("topicForm");
-      const topicsList = document.getElementById("topicsList");
+  const BASE_URL = "http://127.0.0.1:8000/api/"; // ✅ fixed base URL
+  const socket = new WebSocket("ws://127.0.0.1:8000/ws/topics/");
+  const form = document.getElementById("topicForm");
+  const topicsList = document.getElementById("topicsList");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const progressBar = document.getElementById("progressBar");
+  const downloadStatus = document.getElementById("downloadStatus");
+  const progressText = document.getElementById("progressText");
 
-      // Load all topics and render with delete buttons
-      async function loadTopics() {
-        topicsList.innerHTML = '<p class="no-data">Loading...</p>';
-        try {
-          const res = await fetch(BASE_URL);
-          const data = await res.json();
+  // ✅ Escape HTML (safety)
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-          if (!Array.isArray(data) || data.length === 0) {
-            topicsList.innerHTML = '<p class="no-data">No topics yet.</p>';
-            return;
-          }
+  // ✅ Load topics list
+  async function loadTopics() {
+    topicsList.innerHTML = '<p class="no-data">Loading...</p>';
+    try {
+      const res = await fetch(BASE_URL + "topics/");
+      const data = await res.json();
 
-          topicsList.innerHTML = data
-            .map((topic) => {
-              return `
-            <div class="topic-card" data-id="${topic.id}">
-              <h3>${escapeHtml(topic.title)}</h3>
-              <p>${escapeHtml(topic.description || "")}</p>
-              ${
-                topic.documentation_url
-                  ? `<a href="${topic.documentation_url}" target="_blank">Docs</a>`
-                  : ""
-              }
-              ${
-                topic.video_url
-                  ? `<a href="${topic.video_url}" target="_blank">Video</a>`
-                  : ""
-              }
-              <p style="color:gray; font-size:0.9rem;">By: ${escapeHtml(
-                topic.user || "Anonymous"
-              )}</p>
-              <button class="delete-btn" data-id="${topic.id}">🗑 Delete</button>
-            </div>`;
-            })
-            .join("");
-
-          // Attach delete handlers
-          document.querySelectorAll(".delete-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const id = btn.getAttribute("data-id");
-              deleteTopic(id);
-            });
-          });
-        } catch (err) {
-          topicsList.innerHTML =
-            '<p class="no-data">Failed to load topics.</p>';
-          console.error("Failed to load topics", err);
-        }
+      if (!Array.isArray(data) || data.length === 0) {
+        topicsList.innerHTML = '<p class="no-data">No topics yet.</p>';
+        return;
       }
 
-      // Simple HTML escaper to avoid injection from API
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      // Delete a topic by id
-      async function deleteTopic(id) {
-        try {
-          const res = await fetch(`${BASE_URL}${id}/`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + localStorage.getItem("access_token"),
-            },
-          });
-
-          if (res.ok || res.status === 204) {
-            // 🔥 Remove topic from DOM
-            const el = document.querySelector(`.topic-card[data-id="${id}"]`);
-            if (el) el.remove();
-
-            showNotification("🗑️ Topic deleted successfully!");
-          } else if (res.status === 403) {
-            showNotification("⛔ You are not allowed to delete this topic.");
-          } else {
-            const text = await res.text();
-            console.error("Delete failed", res.status, text);
-            showNotification("⚠️ Failed to delete topic.");
+      topicsList.innerHTML = data
+        .map(
+          (topic) => `
+        <div class="topic-card" data-id="${topic.id}">
+          <h3>${escapeHtml(topic.title)}</h3>
+          <p>${escapeHtml(topic.description || "")}</p>
+          ${
+            topic.documentation_url
+              ? `<a href="${topic.documentation_url}" target="_blank">Docs</a>`
+              : ""
           }
-        } catch (err) {
-          console.error("Delete error", err);
-          showNotification("⚠️ Network error while deleting topic.");
-        }
-      }
-
-      // WebSocket connection (single, reused)
-
-      socket.onopen = () => console.log("✅ WebSocket connected");
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          // If server sends deleted_id, remove that element
-          if (data.deleted_id) {
-            const el = document.querySelector(
-              `.topic-card[data-id="${data.deleted_id}"]`
-            );
-            if (el) el.remove();
-            showNotification(`🗑 Topic deleted (id: ${data.deleted_id})`);
-            return;
+          ${
+            topic.video_url
+              ? `<a href="${topic.video_url}" target="_blank">Video</a>`
+              : ""
           }
+          <p style="color:gray; font-size:0.9rem;">By: ${escapeHtml(
+            topic.user || "Anonymous"
+          )}</p>
+          <button class="delete-btn" data-id="${topic.id}">🗑 Delete</button>
+        </div>`
+        )
+        .join("");
 
-          // If server sends details about a new topic
-          if (data.title) {
-            showNotification(
-              `🆕 New topic added: <b>${escapeHtml(
-                data.title
-              )}</b> by <b>${escapeHtml(data.user)}</b>`
-            );
-            loadTopics(); // refresh list
-          }
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", () => deleteTopic(btn.dataset.id));
+      });
+    } catch (err) {
+      topicsList.innerHTML =
+        '<p class="no-data">Failed to load topics.</p>';
+      console.error("Failed to load topics", err);
+    }
+  }
 
-          // 🕒 Handle Celery reminder notifications
-          if (data.type === "reminder") {
-            showNotification(data.message);
-            return;
-          }
-        } catch (err) {
-          console.error("Invalid WS message", err, event.data);
-        }
-      };
-
-      socket.onclose = (event) => {
-        console.log("❌ WebSocket disconnected", event);
-        try {
-          console.log(
-            "WebSocket close code:",
-            event.code,
-            "reason:",
-            event.reason
-          );
-        } catch (err) {
-          console.log("Could not read close event details", err);
-        }
-      };
-
-      socket.onerror = (err) => {
-        console.error("WebSocket error", err);
-      };
-
-      // 🔔 Notification popup
-      function showNotification(message) {
-        const note = document.createElement("div");
-        note.className = "toast";
-        note.innerHTML = message;
-        document.body.appendChild(note);
-
-        // show animation
-        setTimeout(() => note.classList.add("show"), 100);
-
-        // hide after few seconds
-        setTimeout(() => {
-          note.classList.remove("show");
-          setTimeout(() => note.remove(), 500);
-        }, 4000);
-      }
-
-      // Add a new topic (form kept as view-only here)
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        // The add form is on a separate page. Just reload list if needed.
-        loadTopics();
+  // ✅ Delete topic
+  async function deleteTopic(id) {
+    try {
+      const res = await fetch(BASE_URL + `topics/${id}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("access_token"),
+        },
       });
 
-      // Initial load
-      loadTopics();
-    </script>
+      if (res.ok || res.status === 204) {
+        const el = document.querySelector(`.topic-card[data-id="${id}"]`);
+        if (el) el.remove();
+        showNotification("🗑️ Topic deleted successfully!");
+      } else if (res.status === 403) {
+        showNotification("⛔ You are not allowed to delete this topic.");
+      } else {
+        showNotification("⚠️ Failed to delete topic.");
+      }
+    } catch (err) {
+      console.error("Delete error", err);
+      showNotification("⚠️ Network error while deleting topic.");
+    }
+  }
+
+  // ✅ WebSocket
+  socket.onopen = () => console.log("✅ WebSocket connected");
+
+  socket.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+
+      if (data.deleted_id) {
+        const el = document.querySelector(
+          `.topic-card[data-id="${data.deleted_id}"]`
+        );
+        if (el) el.remove();
+        showNotification(`🗑 Topic deleted (id: ${data.deleted_id})`);
+        return;
+      }
+
+      if (data.title) {
+        showNotification(
+          `🆕 New topic added: <b>${escapeHtml(
+            data.title
+          )}</b> by <b>${escapeHtml(data.user)}</b>`
+        );
+        loadTopics();
+      }
+
+      if (data.type === "reminder") {
+        showNotification(data.message);
+      }
+    } catch (err) {
+      console.error("Invalid WS message", err, event.data);
+    }
+  };
+
+  socket.onclose = (event) => {
+    console.log("❌ WebSocket disconnected", event);
+  };
+
+  socket.onerror = (err) => console.error("WebSocket error", err);
+
+  
+  // ✅ Notification popup
+  function showNotification(message) {
+    const note = document.createElement("div");
+    note.className = "toast";
+    note.innerHTML = message;
+    document.body.appendChild(note);
+    setTimeout(() => note.classList.add("show"), 100);
+    setTimeout(() => {
+      note.classList.remove("show");
+      setTimeout(() => note.remove(), 500);
+    }, 4000);
+  }
+
+  downloadBtn.addEventListener("click", async (e) => {
+  e.preventDefault(); // ✅ stop form refresh
+
+  downloadStatus.style.display = "block";
+  progressBar.value = 10;
+  progressText.textContent = "⏳ Checking cache...";
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/download_cached_topics/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("access_token"),
+      },
+    });
+
+    if (!res.ok) {
+      progressText.textContent = "⚠️ Download failed (Not found)";
+      progressBar.value = 0;
+      return;
+    }
+
+    progressBar.value = 50;
+    progressText.textContent = "📦 Preparing file...";
+
+    const blob = await res.blob();
+    progressBar.value = 80;
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "topics_data.json"; // ✅ will trigger browser download
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    progressBar.value = 100;
+    progressText.textContent = "✅ Download complete!";
+    setTimeout(() => {
+      downloadStatus.style.display = "none";
+    }, 2000);
+  } catch (error) {
+    console.error("Download error:", error);
+    progressText.textContent = "❌ Error during download";
+    progressBar.value = 0;
+  }
+});
+
+
+  loadTopics();
+</script>
+
   </body>
+</html>
+
 </html>

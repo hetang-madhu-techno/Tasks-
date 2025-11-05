@@ -9,16 +9,13 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
-
+import warnings 
 from celery.schedules import crontab
 
-
-
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,13 +135,6 @@ TEMPLATES = [
     },
 ]
 
-CELERY_BEAT_SCHEDULE = {
-    'remind-every-1-min': {
-        'task': 'data_api.tasks.remind_users_to_add_topic',
-        'schedule': crontab(minute='*/1'),  # every 1 minute
-    },
-}
-
 
  
 # WSGI_APPLICATION = 'all_topics.wsgi.application'
@@ -201,10 +191,14 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # optional for custom static
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -229,3 +223,24 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': False,
     'ALGORITHM': 'HS256',
 }
+
+CELERY_BEAT_SCHEDULE = {
+    'remind-every-25-min': {
+        'task': 'data_api.tasks.remind_users_to_add_topic',
+        'schedule': crontab(minute='*/25'),  # every 1 minute
+    },
+}
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache", # Using Redis as cache backend
+        "LOCATION": "redis://127.0.0.1:6379/1",  # DB 1 in Redis
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+CACHE_TTL = 60 * 20 # cache for 2 minutes
